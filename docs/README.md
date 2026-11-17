@@ -55,6 +55,10 @@ product pages. The VitePress documentation source is this `docs/` tree.
 
 - [Apple Application Inventory Projection](guides/apple/apple-application-analysis.md)
 
+## Showcases
+
+- [Freeform UI patterns: panels, canvas, popovers and tools](showcases/freeform-ui-patterns.md)
+
 ## .NET assemblies
 
 - [Managed-code analysis](guides/managed/managed-code-analysis.md)
