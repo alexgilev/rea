@@ -48,6 +48,19 @@ Tools used and what each one produced:
   window. All live interaction went through accessibility presses on a new
   empty board. No pointer or keyboard events were synthesised.
 
+Two limits apply to every **Derived** code constant:
+
+- Only the main executable was disassembled. The five embedded frameworks
+  (`TSUtility`, `TSMediaLibrary`, `TSImageGeneration`, `TSAccessibility` and
+  `AppsGen`) were not.
+- The binary is stripped. An Objective-C method has an exact name. A Swift
+  function has none, so it is named after the nearest preceding Objective-C
+  method. Where this document ties a constant to a class through a Swift
+  function, the constant is **Derived** and the class name is **Inferred**.
+  This applies to the popover table in section 3 (every row without a named
+  Objective-C method), the inspector popover behaviour, the status HUD and
+  the 0.125 s shape-popover animation.
+
 Tools that did not work on this host:
 
 - `rea inspect-macho` and `rea observe-native-ui` compile a Swift helper. The
@@ -94,7 +107,7 @@ Evidence for the implementation (**Derived**): toolbar item subclasses
 `CRLMacToolbarItem`, `CRLMacMenuToolbarItem`, `CRLMacZoomMenuToolbarItem`,
 `CRLMacSearchToolbarItem` and `CRLMacTitleToolbarItem`. The insert group is an
 `AXGroup` holding four `AXButton` items and one `AXMenuButton` (Insert Shape),
-which matches `NSToolbarItemGroup` (**Inferred**).
+which matches `NSToolbarItemGroup` (**Inferred**). The class names are **Derived** and their mapping to the visible items is **Inferred**.
 
 Toolbar material, corner radius, border and shadow: **Unknown**. They are drawn
 by `NSToolbar`.
@@ -227,9 +240,7 @@ Style, Text, Text Fill, URL and USDZ (`CRLMac…InspectorViewController`,
 `CRLMacLineEndPalette`, `CRLStrokePatternPalette` and
 `CRLTableBorderStylePalette`.
 
-`CRLMacInspectorPresenter` presents them in an `NSPopover` whose behaviour is
-semitransient (**Derived**, `setBehavior:` with value 2 at `0x1011dc294` and
-`0x1011dc850`).
+`CRLMacInspectorPresenter` presents them in an `NSPopover`. Two `setBehavior:` calls with value 2 (semitransient) sit at `0x1011dc294` and `0x1011dc850`, in Swift functions next to that presenter's methods. The constant is **Derived** and the link to the presenter is **Inferred**.
 
 Interaction rules found in code (**Derived**):
 
@@ -252,12 +263,12 @@ the Popover API with `popover="auto"` plus CSS anchor positioning.
 
 ### 1.4 HUDs
 
-| HUD             | Evidence (**Derived**)                                                                                                                                                                                                                                                  |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Canvas text HUD | `CRLMacCanvasHUDWindow` (`ignoresMouseEvents`, `showAtPoint:`, `setHUDText:`) with a custom-drawn `CRLMacCanvasHUDView`. It is click-through                                                                                                                            |
-| Image mask HUD  | `CRLMacImageHUDPanel` (an `NSPanel`) with a slider and buttons. Its controller owns a `glassView` property of type `NSGlassView`                                                                                                                                        |
-| Path edit HUD   | `CRLMacPathHUDWindow.nib`                                                                                                                                                                                                                                               |
-| Status HUD      | Swift `HUDView`. Slides in on `transform.translation.x` from 100 pt (mirrored for right-to-left) over 0.35 s, with a second 0.35 s animation whose key path was not resolved. Height animates to 56 pt in 0.15 s, ease-out. That this is the status HUD is **Inferred** |
+| HUD             | Evidence (**Derived**)                                                                                                                                                                                                                                                                                               |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canvas text HUD | `CRLMacCanvasHUDWindow` (`ignoresMouseEvents`, `showAtPoint:`, `setHUDText:`) with a custom-drawn `CRLMacCanvasHUDView`. It is click-through                                                                                                                                                                         |
+| Image mask HUD  | `CRLMacImageHUDPanel` (an `NSPanel`) with a slider and buttons. Its controller owns a `glassView` property of type `NSGlassView`                                                                                                                                                                                     |
+| Path edit HUD   | `CRLMacPathHUDWindow.nib`                                                                                                                                                                                                                                                                                            |
+| Status HUD      | Swift `HUDView`. Slides in on `transform.translation.x` from 100 pt (mirrored for right-to-left) over 0.35 s, with a second 0.35 s animation whose key path was not resolved. Height animates to 56 pt in 0.15 s, ease-out. That these constants belong to `HUDView`, and that it is the status HUD, is **Inferred** |
 
 `NSGlassView` is not in the public macOS 26.2 SDK headers. The public classes
 are `NSGlassEffectView` and `NSGlassEffectContainerView`, and SwiftUI's
@@ -374,13 +385,13 @@ binary imports `Animation.easeInOut(duration:)` and `Animation.default`.
 
 ### 2.4 Selection, handles and rotation
 
-| Pattern                 | Value                                                                                         | Label                                                                                                  |
-| ----------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| Marquee                 | `CRLMacRectangularMarqueeEventHandler` with `CRLRectangularMarqueeTracker`                    | **Derived**                                                                                            |
-| Marquee start animation | Bounds-size animation, 0.3 s, `cubic-bezier(0.1, 0.25, 0.25, 1)`, starting from an 80 pt size | **Derived** `p_beginMarqueePressAnimation` at `0x1001b7ff0`. The meaning of 80 is **Inferred**         |
-| Handles appear and hide | Opacity fade, 0.15 s                                                                          | **Derived** `-[CRLCanvasRep fadeKnobsIn]`, `fadeKnobsOut`                                              |
-| Rotate snapping         | The rotate handler reads the modifier keys and sets a snap threshold of 22.5°                 | **Derived** constant in `CRLMacRotateKnobDragEventHandler`. That Shift gives 45° steps is **Inferred** |
-| Handle size and style   | **Unknown**                                                                                   |                                                                                                        |
+| Pattern                 | Value                                                                                                                                                  | Label                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| Marquee                 | `CRLMacRectangularMarqueeEventHandler` with `CRLRectangularMarqueeTracker`                                                                             | **Derived**                                                                                            |
+| Marquee start animation | Bounds-size animation, 0.3 s, `cubic-bezier(0.25, 0.1, 0.25, 1)` (Core Animation's default curve, the same as CSS `ease`), starting from an 80 pt size | **Derived** `p_beginMarqueePressAnimation` at `0x1001b7ff0`. The meaning of 80 is **Inferred**         |
+| Handles appear and hide | Opacity fade, 0.15 s                                                                                                                                   | **Derived** `-[CRLCanvasRep fadeKnobsIn]`, `fadeKnobsOut`                                              |
+| Rotate snapping         | The rotate handler reads the modifier keys and sets a snap threshold of 22.5°                                                                          | **Derived** constant in `CRLMacRotateKnobDragEventHandler`. That Shift gives 45° steps is **Inferred** |
+| Handle size and style   | **Unknown**                                                                                                                                            |                                                                                                        |
 
 Cursors (**Derived**, `NSCursor` selectors referenced by the binary): arrow,
 I-beam, crosshair, open hand, closed hand, pointing hand, contextual menu, drag
@@ -452,25 +463,24 @@ observed here):
   cleans up state when the system closes a popover.
 
 Motion: the open and close animation is the system `NSPopover` animation.
-Duration, curve and origin are **Unknown**. One content transition inside the
-shape popover runs for 0.125 s (**Derived**, purpose **Unknown**).
+Duration, curve and origin are **Unknown**. A 0.125 s animation sits in a Swift function next to the shape popover's content controller (constant **Derived**, owner **Inferred**, purpose **Unknown**).
 
 A reusable entrance animation exists in the binary
 (**Derived**, `-[CALayer crl_addSpringScaleInAnimationWithDelay:]` at
 `0x1003d7ed0`). Which views use it is **Unknown**.
 
-| Part                  | Value                                                                                                                                                  |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| First animation       | `CABasicAnimation`, 0.2 s, custom timing with x control points 0.33 and 0.83. The key path (likely opacity) and the y control points were not resolved |
-| Scale                 | `CASpringAnimation`, mass 1, stiffness 200, damping 35, duration = settling duration                                                                   |
-| Spring in other terms | Natural frequency 14.14 rad/s, damping ratio 1.24 (overdamped, no overshoot), response 0.44 s                                                          |
+| Part                  | Value                                                                                                |
+| --------------------- | ---------------------------------------------------------------------------------------------------- |
+| First animation       | `CABasicAnimation`, 0.2 s, timing `cubic-bezier(0.33, 0, 0.83, 0.83)`. The key path was not resolved |
+| Scale                 | `CASpringAnimation`, mass 1, stiffness 200, damping 35, duration = settling duration                 |
+| Spring in other terms | Natural frequency 14.14 rad/s, damping ratio 1.24 (overdamped, no overshoot), response 0.44 s        |
 
 How to rebuild:
 
 ```css
 .popover {
   transform-origin: var(--anchor-x) var(--anchor-y);
-  animation: pop-in 200ms cubic-bezier(0.33, 0, 0.83, 1) both;
+  animation: pop-in 200ms cubic-bezier(0.33, 0, 0.83, 0.83) both;
 }
 @keyframes pop-in {
   from {
@@ -480,20 +490,16 @@ How to rebuild:
 }
 ```
 
-The `0.9` start scale and the two y control points are placeholders, not
-Freeform values. In SwiftUI the nearest spring is
+The `0.9` start scale is a placeholder, not a Freeform value. In SwiftUI the nearest spring is
 `.spring(response: 0.44, dampingFraction: 1)`. Use the web Popover API
 (`popover="auto"`) for transient behaviour (light dismiss and Escape) and
 `popover="manual"` with your own outside-click rule for the semitransient kind.
 
 ## 4. Tool switching
 
-Freeform on macOS has no persistent tool mode in its toolbar
-(**Measured** and **Derived**):
+Freeform on macOS shows no persistent tool mode in its toolbar:
 
-- The board toolbar exposes four plain buttons and one menu button. None of
-  them is a radio button, and none reports a selected value. Each press inserts
-  an object or opens the shape library.
+- The board toolbar exposes four plain buttons and one menu button. None of them is a radio button, and none reports a selected value (**Measured**). That each press inserts an object or opens the shape library is **Inferred** from the action selectors, such as `mainMenuActionToInsertStickyNoteWithSender:`. A press sent through the Accessibility API while Freeform was in the background showed no visible result.
 - What a drag does is decided by what is under the pointer. The binary has one
   event handler class per case: default mouse, object drag, resize handle,
   rotate handle, line and connection handles, marquee, space-drag pan, path
